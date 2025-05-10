@@ -1,14 +1,29 @@
 from flask import Flask, render_template, request, jsonify
+import numpy as np
+import tensorflow
+from tensorflow.keras.models import load_model
+import os
 
 app = Flask(__name__)
 
-# Region-specific parameters
-region_factors = {
-    'north': 0.95,  # Slower growth in northern regions
-    'south': 1.05,  # Faster growth in southern regions
-    'east': 0.98,   # Slightly slower growth in eastern regions
-    'west': 1.02    # Slightly faster growth in western regions
+MODEL_PATHS = {
+    'north': 'models/ndvi_predictor_north.h5',
+    'south': 'models/ndvi_predictor_south.h5',
+    'east': 'models/ndvi_predictor_east.h5',
+    'west': 'models/ndvi_predictor_west.h5'
 }
+
+# Check all models exist
+for region, path in MODEL_PATHS.items():
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Model for {region} not found at {path}")
+
+# Load models
+models = {}
+for region, path in MODEL_PATHS.items():
+    print(f"Loading model for {region} from {path}")
+    models[region] = load_model(path, compile=False)
+    print(f"Loaded {region} region model: LSTM neural network")
 
 @app.route('/')
 def index():
@@ -19,6 +34,9 @@ def predict():
     try:
         # Get region from form
         region = request.form['region'].lower()
+        
+        if region not in models:
+            return jsonify({'error': f'Invalid region: {region}'})
         
         # Get NDVI values from form
         ndvi_values = [
@@ -34,8 +52,8 @@ def predict():
             if val < -1 or val > 1:
                 return jsonify({'error': 'NDVI values must be between -1 and 1'})
                 
-        # Make prediction
-        predictions = statistical_prediction(ndvi_values, region)
+        # Make prediction using the loaded model
+        predictions = model_prediction(ndvi_values, region)
         
         # Format prediction results
         results = {
@@ -45,36 +63,28 @@ def predict():
         }
         
         return jsonify(results)
-    
+        
     except Exception as e:
         return jsonify({'error': str(e)})
 
-def statistical_prediction(ndvi_values, region):
+def model_prediction(ndvi_values, region):
     """
-    Make a prediction based on statistical analysis of the historical NDVI values
+    Make a prediction using the pre-built ML model for the selected region
     """
-    # Calculate differences between consecutive values
-    diffs = [ndvi_values[i+1] - ndvi_values[i] for i in range(len(ndvi_values)-1)]
+    # Get the model for this region
+    model = models[region]
     
-    # Apply weights to favor more recent trends
-    weights = [0.1, 0.2, 0.3, 0.4]  # More weight to recent changes
-    weighted_avg = sum(d * w for d, w in zip(diffs, weights)) / sum(weights)
+    # Reshape input for prediction (LSTM expects 3D shape: [samples, timesteps, features])
+    X = np.array(ndvi_values).reshape(1, 5, 1)
     
-    # Get region factor
-    factor = region_factors.get(region, 1.0)
+    # Use TensorFlow eager execution to get predictions
+    predictions = model.predict(X)
     
-    # Apply dampening for future predictions
-    dampening = [1.0, 0.9, 0.8]  # Less confidence in distant future predictions
+    # Convert to NumPy array if it's a tensor (safe handling)
+    predictions = predictions.numpy() if hasattr(predictions, 'numpy') else predictions
     
-    # Make predictions
-    base = ndvi_values[-1]
-    predictions = []
-    
-    for i, damp in enumerate(dampening):
-        next_val = base + (weighted_avg * (i+1) * damp * factor)
-        # Ensure prediction stays within valid NDVI range
-        next_val = max(-1.0, min(1.0, next_val))
-        predictions.append(next_val)
+    # Flatten and clip predictions to valid NDVI range
+    predictions = np.clip(predictions.flatten(), -1.0, 1.0)
     
     return predictions
 
