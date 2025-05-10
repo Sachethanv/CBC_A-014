@@ -22,6 +22,13 @@
         h1 {
             text-align: center;
             margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 30px;
         }
         .form-group {
             margin-bottom: 15px;
@@ -131,11 +138,125 @@
             margin-top: 5px;
             font-weight: bold;
         }
+        .about-section {
+            background-color: #f0f8ff;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        .toggle-about {
+            background-color: transparent;
+            color: #3498db;
+            border: 1px solid #3498db;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .toggle-about:hover {
+            background-color: #ecf0f1;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+        .collapsible {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .expanded {
+            max-height: 2000px;
+        }
+        .how-to-steps {
+            counter-reset: step-counter;
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        .how-to-steps li {
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 15px;
+            counter-increment: step-counter;
+        }
+        .how-to-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 25px;
+            height: 25px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Vegetation Predictor</h1>
+        
+        <!-- New About Section -->
+        <div class="about-section">
+            <button id="toggle-about" class="toggle-about">Show About This Tool ▼</button>
+            <div id="about-content" class="collapsible">
+                <h2>What is the Vegetation Predictor?</h2>
+                <p>The Vegetation Predictor is a powerful tool designed for environmental scientists, agricultural specialists, and land managers to forecast vegetation health trends based on historical NDVI (Normalized Difference Vegetation Index) data.</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📈</div>
+                        <h4>Trend Analysis</h4>
+                        <p>Analyze historical vegetation patterns</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔮</div>
+                        <h4>Predictions</h4>
+                        <p>Forecast future vegetation conditions</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌍</div>
+                        <h4>Regional Focus</h4>
+                        <p>Compare different geographical areas</p>
+                    </div>
+                </div>
+                
+                <h2>How to Use This Tool</h2>
+                <ol class="how-to-steps">
+                    <li><strong>Select a Region</strong> - Choose the geographical area you want to analyze.</li>
+                    <li><strong>Enter NDVI Values</strong> - Input the NDVI values from the past 5 years. You can use the sample data provided or enter your own measurements.</li>
+                    <li><strong>Generate Predictions</strong> - Click the "Predict Next 3 Years" button to generate forecasts.</li>
+                    <li><strong>Analyze Results</strong> - Review the predictions and visualizations across different chart types to understand future vegetation trends.</li>
+                </ol>
+                
+                <h2>Why NDVI Matters</h2>
+                <p>NDVI (Normalized Difference Vegetation Index) is a standardized index that measures the difference between reflected near-infrared light (which vegetation strongly reflects) and red light (which vegetation absorbs). This makes it an excellent indicator of:</p>
+                <ul>
+                    <li>Vegetation health and density</li>
+                    <li>Drought conditions</li>
+                    <li>Agricultural productivity</li>
+                    <li>Ecosystem changes over time</li>
+                    <li>Impact of climate change on plant life</li>
+                </ul>
+                
+                <p>By analyzing NDVI trends, this tool helps you make informed decisions about land management, conservation efforts, and agricultural planning.</p>
+            </div>
+        </div>
         
         <div class="form-group">
             <label for="region">Select Region:</label>
@@ -150,7 +271,27 @@
         <div class="form-group">
             <label>Enter Last 5 Years NDVI Values:</label>
             <div class="input-row" id="ndvi-inputs">
-                <!-- Input fields will be generated by JavaScript -->
+                <!-- Static fallback inputs in case JavaScript fails -->
+                <div class="form-group">
+                    <label for="ndvi1">Year 1:</label>
+                    <input type="number" id="ndvi1" name="ndvi1" step="0.01" placeholder="e.g., 0.45" min="-1" max="1">
+                </div>
+                <div class="form-group">
+                    <label for="ndvi2">Year 2:</label>
+                    <input type="number" id="ndvi2" name="ndvi2" step="0.01" placeholder="e.g., 0.45" min="-1" max="1">
+                </div>
+                <div class="form-group">
+                    <label for="ndvi3">Year 3:</label>
+                    <input type="number" id="ndvi3" name="ndvi3" step="0.01" placeholder="e.g., 0.45" min="-1" max="1">
+                </div>
+                <div class="form-group">
+                    <label for="ndvi4">Year 4:</label>
+                    <input type="number" id="ndvi4" name="ndvi4" step="0.01" placeholder="e.g., 0.45" min="-1" max="1">
+                </div>
+                <div class="form-group">
+                    <label for="ndvi5">Year 5:</label>
+                    <input type="number" id="ndvi5" name="ndvi5" step="0.01" placeholder="e.g., 0.45" min="-1" max="1">
+                </div>
             </div>
         </div>
         
@@ -188,12 +329,16 @@
             <div class="chart-tabs">
                 <button class="chart-tab active" id="tab-line">Line Chart</button>
                 <button class="chart-tab" id="tab-bar">Bar Chart</button>
+                <button class="chart-tab" id="tab-radar">Radar Chart</button>
             </div>
             <div class="chart-view active" id="view-line">
                 <canvas id="ndviLineChart"></canvas>
             </div>
             <div class="chart-view" id="view-bar">
                 <canvas id="ndviBarChart"></canvas>
+            </div>
+            <div class="chart-view" id="view-radar">
+                <canvas id="ndviRadarChart"></canvas>
             </div>
         </div>
     </div>
@@ -202,6 +347,7 @@
         // Chart.js instances
         let ndviLineChart;
         let ndviBarChart;
+        let ndviRadarChart;
         
         // Sample data for each region
         const sampleData = {
@@ -211,9 +357,26 @@
             'west': [0.52, 0.50, 0.53, 0.57, 0.60]
         };
         
+        // Toggle about section
+        document.getElementById('toggle-about').addEventListener('click', function() {
+            const content = document.getElementById('about-content');
+            content.classList.toggle('expanded');
+            
+            if (content.classList.contains('expanded')) {
+                this.textContent = 'Hide About This Tool ▲';
+            } else {
+                this.textContent = 'Show About This Tool ▼';
+            }
+        });
+        
         // Generate input fields
         function generateInputFields() {
             const inputContainer = document.getElementById('ndvi-inputs');
+            if (!inputContainer) {
+                console.error("Could not find element with ID 'ndvi-inputs'");
+                return;
+            }
+            
             inputContainer.innerHTML = '';
             
             for (let i = 0; i < 5; i++) {
@@ -237,11 +400,16 @@
                 inputGroup.appendChild(input);
                 inputContainer.appendChild(inputGroup);
             }
+            console.log("Input fields generated successfully");
         }
         
         // Generate result sections
         function generateResultItems() {
             const resultContainer = document.getElementById('result');
+            if (!resultContainer) {
+                console.error("Could not find element with ID 'result'");
+                return;
+            }
             
             // Clear existing result items except the heading
             const heading = resultContainer.querySelector('h3');
@@ -271,6 +439,7 @@
                 resultItem.appendChild(interpretDiv);
                 resultContainer.appendChild(resultItem);
             }
+            console.log("Result items generated successfully");
         }
         
         // Get interpretation of NDVI value
@@ -293,7 +462,13 @@
         
         // Update or create line chart
         function updateLineChart(historicalData, predictedData) {
-            const ctx = document.getElementById('ndviLineChart').getContext('2d');
+            const canvas = document.getElementById('ndviLineChart');
+            if (!canvas) {
+                console.error("Could not find element with ID 'ndviLineChart'");
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
             
             // Prepare labels using Year X format
             const labels = [];
@@ -380,11 +555,18 @@
                     }
                 }
             });
+            console.log("Line chart updated successfully");
         }
         
         // Create bar chart
         function updateBarChart(historicalData, predictedData) {
-            const ctx = document.getElementById('ndviBarChart').getContext('2d');
+            const canvas = document.getElementById('ndviBarChart');
+            if (!canvas) {
+                console.error("Could not find element with ID 'ndviBarChart'");
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
             
             // Prepare labels using Year X format
             const labels = [];
@@ -459,16 +641,131 @@
                     }
                 }
             });
+            console.log("Bar chart updated successfully");
         }
         
+        // Create radar chart
+        function updateRadarChart(historicalData, predictedData) {
+            const canvas = document.getElementById('ndviRadarChart');
+            if (!canvas) {
+                console.error("Could not find element with ID 'ndviRadarChart'");
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Calculate aggregated metrics from NDVI values
+            function calculateMetrics(ndviValues) {
+                const avgNDVI = ndviValues.reduce((a, b) => a + b, 0) / ndviValues.length;
+                
+                // Derive vegetation metrics from NDVI (scaled between 0-1)
+                return {
+                    'Vegetation Density': Math.max(0, Math.min(1, avgNDVI * 1.2 + 0.3)),
+                    'Drought Resistance': Math.max(0, Math.min(1, avgNDVI * 0.8 + 0.2)),
+                    'Ecosystem Health': Math.max(0, Math.min(1, avgNDVI * 1.1 + 0.1)),
+                    'Carbon Sequestration': Math.max(0, Math.min(1, avgNDVI * 1.3)),
+                    'Biodiversity Potential': Math.max(0, Math.min(1, avgNDVI * 0.9 + 0.15))
+                };
+            }
+            
+            // Calculate metrics
+            const historicalMetrics = calculateMetrics(historicalData);
+            const predictedMetrics = calculateMetrics(predictedData);
+            
+            // Prepare data for radar chart
+            const labels = Object.keys(historicalMetrics);
+            const historicalValues = Object.values(historicalMetrics);
+            const predictedValues = Object.values(predictedMetrics);
+            
+            // Create radar chart
+            if (ndviRadarChart) {
+                ndviRadarChart.destroy();
+            }
+            
+            ndviRadarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Historical Data',
+                            data: historicalValues,
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            pointBackgroundColor: 'rgba(52, 152, 219, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(52, 152, 219, 1)'
+                        },
+                        {
+                            label: 'Predicted Data',
+                            data: predictedValues,
+                            backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                            borderColor: 'rgba(39, 174, 96, 1)',
+                            pointBackgroundColor: 'rgba(39, 174, 96, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(39, 174, 96, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 1,
+                            ticks: {
+                                stepSize: 0.2
+                            }
+                        }
+                    }
+                }
+            });
+            
+            console.log("Radar chart updated successfully");
+        }
+
+        // Event listeners for chart tabs
+        document.getElementById('tab-line').addEventListener('click', function() {
+            document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.chart-view').forEach(view => view.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('view-line').classList.add('active');
+        });
+        
+        document.getElementById('tab-bar').addEventListener('click', function() {
+            document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.chart-view').forEach(view => view.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('view-bar').classList.add('active');
+        });
+        
+        document.getElementById('tab-radar').addEventListener('click', function() {
+            document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.chart-view').forEach(view => view.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('view-radar').classList.add('active');
+        });
+
         // Event listener for prediction button
         document.getElementById('predict-btn').addEventListener('click', function() {
+            console.log("Predict button clicked");
+            
             // Hide previous results
             document.getElementById('result').style.display = 'none';
             document.getElementById('error-msg').style.display = 'none';
             document.getElementById('chart-container').style.display = 'none';
             
             const region = document.getElementById('region').value;
+            console.log("Selected region:", region);
             
             // Collect NDVI values
             const ndviValues = [];
@@ -476,6 +773,12 @@
             
             for (let i = 1; i <= 5; i++) {
                 const input = document.getElementById(`ndvi${i}`);
+                if (!input) {
+                    console.error(`Could not find input element with ID 'ndvi${i}'`);
+                    hasError = true;
+                    break;
+                }
+                
                 const value = input.value.trim() === '' ? null : parseFloat(input.value);
                 
                 if (value === null || isNaN(value) || value < -1 || value > 1) {
@@ -493,110 +796,98 @@
                 return;
             }
             
-            // Prepare form data for submission
-            const formData = new FormData();
-            formData.append('region', region);
-            for (let i = 1; i <= 5; i++) {
-                formData.append(`ndvi${i}`, document.getElementById(`ndvi${i}`).value);
+            console.log("NDVI values:", ndviValues);
+            
+            // Use linear regression to predict future values
+            function predictNextValues(values, numPredictions = 3) {
+                // Prepare x and y values for regression
+                const x = Array.from({length: values.length}, (_, i) => i + 1);
+                const y = values;
+                
+                // Calculate slope and intercept for linear regression
+                const n = x.length;
+                const sumX = x.reduce((a, b) => a + b, 0);
+                const sumY = y.reduce((a, b) => a + b, 0);
+                const sumXY = x.reduce((total, xi, i) => total + xi * y[i], 0);
+                const sumXX = x.reduce((total, xi) => total + xi * xi, 0);
+                
+                const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+                const intercept = (sumY - slope * sumX) / n;
+                
+                console.log(`Linear regression: y = ${slope.toFixed(4)}x + ${intercept.toFixed(4)}`);
+                
+                // Generate predictions
+                const predictions = [];
+                for (let i = 1; i <= numPredictions; i++) {
+                    const nextX = x.length + i;
+                    let prediction = slope * nextX + intercept;
+                    
+                    // Ensure prediction is within valid NDVI range
+                    prediction = Math.max(-1, Math.min(1, prediction));
+                    predictions.push(parseFloat(prediction.toFixed(2)));
+                }
+                
+                return predictions;
             }
             
-            // Send request to server
-            fetch('/predict', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    // Show error message
-                    const errorMsg = document.getElementById('error-msg');
-                    errorMsg.textContent = data.error;
-                    errorMsg.style.display = 'block';
-                    return;
+            // Generate predictions
+            const predictions = predictNextValues(ndviValues);
+            console.log("Predicted values:", predictions);
+            
+            // Display results
+            const resultContainer = document.getElementById('result');
+            resultContainer.style.display = 'block';
+            
+            for (let i = 0; i < predictions.length; i++) {
+                const valueElement = document.getElementById(`year${i+1}`);
+                const interpretElement = document.getElementById(`interpret${i+1}`);
+                
+                if (valueElement && interpretElement) {
+                    valueElement.textContent = predictions[i].toFixed(2);
+                    interpretElement.textContent = getNDVIInterpretation(predictions[i]);
+                    interpretElement.style.color = getNDVIColor(predictions[i]);
                 }
-                
-                // Display results with interpretations
-                const predictions = [
-                    parseFloat(data.year1), 
-                    parseFloat(data.year2), 
-                    parseFloat(data.year3)
-                ];
-                
-                for (let i = 0; i < 3; i++) {
-                    const value = predictions[i];
-                    document.getElementById(`year${i+1}`).textContent = value.toFixed(4);
-                    
-                    // Add interpretation
-                    const interpretElem = document.getElementById(`interpret${i+1}`);
-                    interpretElem.textContent = getNDVIInterpretation(value);
-                    
-                    // Set color based on NDVI value
-                    interpretElem.style.color = getNDVIColor(value);
-                }
-                
-                document.getElementById('result').style.display = 'block';
-                document.getElementById('chart-container').style.display = 'block';
-                
-                // Update both charts
-                updateLineChart(ndviValues, predictions);
-                updateBarChart(ndviValues, predictions);
-            })
-            .catch(error => {
-                // Show error message
-                const errorMsg = document.getElementById('error-msg');
-                errorMsg.textContent = "Error connecting to the server. Please try again later.";
-                errorMsg.style.display = 'block';
-            });
+            }
+            
+            // Update charts
+            document.getElementById('chart-container').style.display = 'block';
+            updateLineChart(ndviValues, predictions);
+            updateBarChart(ndviValues, predictions);
+            updateRadarChart(ndviValues, predictions);
         });
         
-        // Tab switching functionality
-        document.getElementById('tab-line').addEventListener('click', function() {
-            document.getElementById('tab-line').classList.add('active');
-            document.getElementById('tab-bar').classList.remove('active');
-            document.getElementById('view-line').classList.add('active');
-            document.getElementById('view-bar').classList.remove('active');
-        });
-        
-        document.getElementById('tab-bar').addEventListener('click', function() {
-            document.getElementById('tab-bar').classList.add('active');
-            document.getElementById('tab-line').classList.remove('active');
-            document.getElementById('view-bar').classList.add('active');
-            document.getElementById('view-line').classList.remove('active');
-        });
-        
-        // Auto-fill with sample data when region changes
+        // Update input values when region is changed
         document.getElementById('region').addEventListener('change', function() {
             const region = this.value;
-            const data = sampleData[region];
+            console.log("Region changed to:", region);
             
-            if (data) {
+            if (sampleData[region]) {
                 for (let i = 0; i < 5; i++) {
                     const input = document.getElementById(`ndvi${i+1}`);
                     if (input) {
-                        input.value = data[i];
+                        input.value = sampleData[region][i];
                     }
                 }
             }
         });
         
-        // Initialize page
-        window.onload = function() {
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM fully loaded");
             generateInputFields();
             generateResultItems();
             
-            // Fill with default data for North region
-            const region = document.getElementById('region').value;
-            const data = sampleData[region];
-            
-            if (data) {
+            // Set initial region data
+            const initialRegion = document.getElementById('region').value;
+            if (sampleData[initialRegion]) {
                 for (let i = 0; i < 5; i++) {
                     const input = document.getElementById(`ndvi${i+1}`);
                     if (input) {
-                        input.value = data[i];
+                        input.value = sampleData[initialRegion][i];
                     }
                 }
             }
-        };
+        });
     </script>
 </body>
 </html>
