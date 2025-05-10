@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NDVI Predictor</title>
+    <title>Vegetation Predictor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
@@ -82,11 +82,60 @@
             border-radius: 6px;
             display: none;
         }
+        .chart-tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .chart-tab {
+            padding: 8px 15px;
+            background-color: #eaeaea;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+        }
+        .chart-tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .chart-view {
+            display: none;
+        }
+        .chart-view.active {
+            display: block;
+        }
+        .interpretation {
+            background-color: #e8f4fd;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 6px;
+        }
+        .ndvi-scale {
+            display: flex;
+            margin: 15px 0;
+            height: 30px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .ndvi-scale-item {
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ndvi-indicator {
+            margin-top: 5px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>NDVI Predictor</h1>
+        <h1>Vegetation Predictor</h1>
         
         <div class="form-group">
             <label for="region">Select Region:</label>
@@ -105,6 +154,27 @@
             </div>
         </div>
         
+        <div class="interpretation">
+            <h3>NDVI Scale Reference</h3>
+            <p>NDVI (Normalized Difference Vegetation Index) measures vegetation health:</p>
+            
+            <div class="ndvi-scale">
+                <div class="ndvi-scale-item" style="background-color: #d7191c;">&lt; 0</div>
+                <div class="ndvi-scale-item" style="background-color: #fdae61;">0-0.2</div>
+                <div class="ndvi-scale-item" style="background-color: #ffffbf;">0.2-0.4</div>
+                <div class="ndvi-scale-item" style="background-color: #a6d96a;">0.4-0.6</div>
+                <div class="ndvi-scale-item" style="background-color: #1a9641;">0.6-1.0</div>
+            </div>
+            
+            <ul>
+                <li><strong>-1 to 0:</strong> Water, bare soil, or artificial surfaces</li>
+                <li><strong>0 to 0.2:</strong> Sparse vegetation or unhealthy plants</li>
+                <li><strong>0.2 to 0.4:</strong> Moderate vegetation</li>
+                <li><strong>0.4 to 0.6:</strong> Dense vegetation</li>
+                <li><strong>0.6 to 1.0:</strong> Very dense, healthy vegetation</li>
+            </ul>
+        </div>
+        
         <button id="predict-btn">Predict Next 3 Years</button>
         
         <div id="error-msg" class="error-msg"></div>
@@ -115,13 +185,23 @@
         </div>
         
         <div id="chart-container" class="chart-container">
-            <canvas id="ndviChart"></canvas>
+            <div class="chart-tabs">
+                <button class="chart-tab active" id="tab-line">Line Chart</button>
+                <button class="chart-tab" id="tab-bar">Bar Chart</button>
+            </div>
+            <div class="chart-view active" id="view-line">
+                <canvas id="ndviLineChart"></canvas>
+            </div>
+            <div class="chart-view" id="view-bar">
+                <canvas id="ndviBarChart"></canvas>
+            </div>
         </div>
     </div>
 
     <script>
-        // Chart.js instance
-        let ndviChart;
+        // Chart.js instances
+        let ndviLineChart;
+        let ndviBarChart;
         
         // Sample data for each region
         const sampleData = {
@@ -133,18 +213,16 @@
         
         // Generate input fields
         function generateInputFields() {
-            const currentYear = new Date().getFullYear();
             const inputContainer = document.getElementById('ndvi-inputs');
             inputContainer.innerHTML = '';
             
             for (let i = 0; i < 5; i++) {
-                const year = currentYear - (4 - i);
                 const inputGroup = document.createElement('div');
                 inputGroup.className = 'form-group';
                 
                 const label = document.createElement('label');
                 label.setAttribute('for', `ndvi${i+1}`);
-                label.textContent = `${year}:`;
+                label.textContent = `Year ${i+1}:`;
                 
                 const input = document.createElement('input');
                 input.type = 'number';
@@ -163,7 +241,6 @@
         
         // Generate result sections
         function generateResultItems() {
-            const currentYear = new Date().getFullYear();
             const resultContainer = document.getElementById('result');
             
             // Clear existing result items except the heading
@@ -173,12 +250,11 @@
             
             // Generate 3 result items for the next 3 years
             for (let i = 0; i < 3; i++) {
-                const year = currentYear + (i + 1);
                 const resultItem = document.createElement('div');
                 resultItem.style.margin = '10px 0';
                 
                 const yearSpan = document.createElement('span');
-                yearSpan.textContent = `${year}: `;
+                yearSpan.textContent = `Year ${i+6}: `;
                 yearSpan.style.marginRight = '10px';
                 
                 const valueSpan = document.createElement('span');
@@ -186,21 +262,43 @@
                 valueSpan.style.fontWeight = 'bold';
                 valueSpan.textContent = '-';
                 
+                const interpretDiv = document.createElement('div');
+                interpretDiv.id = `interpret${i+1}`;
+                interpretDiv.className = 'ndvi-indicator';
+                
                 resultItem.appendChild(yearSpan);
                 resultItem.appendChild(valueSpan);
+                resultItem.appendChild(interpretDiv);
                 resultContainer.appendChild(resultItem);
             }
         }
         
-        // Update or create chart
-        function updateChart(historicalData, predictedData) {
-            const ctx = document.getElementById('ndviChart').getContext('2d');
-            const currentYear = new Date().getFullYear();
+        // Get interpretation of NDVI value
+        function getNDVIInterpretation(value) {
+            if (value < 0) return 'Water bodies or bare soil (Poor)';
+            if (value < 0.2) return 'Sparse vegetation (Very Low)';
+            if (value < 0.4) return 'Moderate vegetation (Low)';
+            if (value < 0.6) return 'Dense vegetation (Good)';
+            return 'Very dense, healthy vegetation (Excellent)';
+        }
+        
+        // Get color for NDVI value
+        function getNDVIColor(value) {
+            if (value < 0) return '#d7191c';
+            if (value < 0.2) return '#fdae61';
+            if (value < 0.4) return '#ffffbf';
+            if (value < 0.6) return '#a6d96a';
+            return '#1a9641';
+        }
+        
+        // Update or create line chart
+        function updateLineChart(historicalData, predictedData) {
+            const ctx = document.getElementById('ndviLineChart').getContext('2d');
             
-            // Prepare labels
+            // Prepare labels using Year X format
             const labels = [];
-            for (let i = -4; i <= 3; i++) {
-                labels.push(currentYear + i);
+            for (let i = 1; i <= 8; i++) {
+                labels.push('Year ' + i);
             }
             
             // Data for historical and predicted values
@@ -217,12 +315,12 @@
             }
             
             // If chart exists, destroy it
-            if (ndviChart) {
-                ndviChart.destroy();
+            if (ndviLineChart) {
+                ndviLineChart.destroy();
             }
             
             // Create new chart
-            ndviChart = new Chart(ctx, {
+            ndviLineChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -249,20 +347,118 @@
                     scales: {
                         y: {
                             min: -0.1,
-                            max: 1.0
+                            max: 1.0,
+                            title: {
+                                display: true,
+                                text: 'NDVI Value'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time Period'
+                            }
                         }
                     },
                     plugins: {
                         tooltip: {
                             mode: 'index',
-                            intersect: false
+                            intersect: false,
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    const value = context.raw;
+                                    if (value !== null) {
+                                        return 'Status: ' + getNDVIInterpretation(value);
+                                    }
+                                    return '';
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
                         }
                     }
                 }
             });
+        }
+        
+        // Create bar chart
+        function updateBarChart(historicalData, predictedData) {
+            const ctx = document.getElementById('ndviBarChart').getContext('2d');
             
-            // Show chart container
-            document.getElementById('chart-container').style.display = 'block';
+            // Prepare labels using Year X format
+            const labels = [];
+            for (let i = 1; i <= 8; i++) {
+                labels.push('Year ' + i);
+            }
+            
+            // Combine data for visualization
+            const allData = [...historicalData];
+            for (let i = 0; i < 3; i++) {
+                allData.push(predictedData[i]);
+            }
+            
+            // Generate colors based on NDVI values
+            const backgroundColors = allData.map(value => {
+                if (value === null) return 'rgba(200, 200, 200, 0.5)';
+                return getNDVIColor(value);
+            });
+            
+            // If chart exists, destroy it
+            if (ndviBarChart) {
+                ndviBarChart.destroy();
+            }
+            
+            // Create bar chart
+            ndviBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'NDVI Values',
+                            data: allData,
+                            backgroundColor: backgroundColors,
+                            borderColor: backgroundColors.map(color => color.replace('0.5', '1')),
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            min: -0.1,
+                            max: 1.0,
+                            title: {
+                                display: true,
+                                text: 'NDVI Value'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time Period'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    const value = context.raw;
+                                    if (value !== null) {
+                                        return 'Status: ' + getNDVIInterpretation(value);
+                                    }
+                                    return '';
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
         }
         
         // Event listener for prediction button
@@ -319,18 +515,31 @@
                     return;
                 }
                 
-                // Display results
-                document.getElementById('year1').textContent = data.year1;
-                document.getElementById('year2').textContent = data.year2;
-                document.getElementById('year3').textContent = data.year3;
-                document.getElementById('result').style.display = 'block';
-                
-                // Update chart
-                updateChart(ndviValues, [
+                // Display results with interpretations
+                const predictions = [
                     parseFloat(data.year1), 
                     parseFloat(data.year2), 
                     parseFloat(data.year3)
-                ]);
+                ];
+                
+                for (let i = 0; i < 3; i++) {
+                    const value = predictions[i];
+                    document.getElementById(`year${i+1}`).textContent = value.toFixed(4);
+                    
+                    // Add interpretation
+                    const interpretElem = document.getElementById(`interpret${i+1}`);
+                    interpretElem.textContent = getNDVIInterpretation(value);
+                    
+                    // Set color based on NDVI value
+                    interpretElem.style.color = getNDVIColor(value);
+                }
+                
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('chart-container').style.display = 'block';
+                
+                // Update both charts
+                updateLineChart(ndviValues, predictions);
+                updateBarChart(ndviValues, predictions);
             })
             .catch(error => {
                 // Show error message
@@ -338,6 +547,21 @@
                 errorMsg.textContent = "Error connecting to the server. Please try again later.";
                 errorMsg.style.display = 'block';
             });
+        });
+        
+        // Tab switching functionality
+        document.getElementById('tab-line').addEventListener('click', function() {
+            document.getElementById('tab-line').classList.add('active');
+            document.getElementById('tab-bar').classList.remove('active');
+            document.getElementById('view-line').classList.add('active');
+            document.getElementById('view-bar').classList.remove('active');
+        });
+        
+        document.getElementById('tab-bar').addEventListener('click', function() {
+            document.getElementById('tab-bar').classList.add('active');
+            document.getElementById('tab-line').classList.remove('active');
+            document.getElementById('view-bar').classList.add('active');
+            document.getElementById('view-line').classList.remove('active');
         });
         
         // Auto-fill with sample data when region changes
